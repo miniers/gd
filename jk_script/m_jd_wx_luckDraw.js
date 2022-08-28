@@ -133,8 +133,8 @@ $.logic = async function () {
         $.canDrawTimes === 0 ? $.canDrawTimes = 1 : ''
         debugger
         let memberInfo = await $.api($.domain.includes('cjhy')
-            ? 'mc/new/brandCard/common/shopAndBrand/getOpenCardInfo'
-            : 'wxCommonInfo/getActMemberInfo',
+                ? 'mc/new/brandCard/common/shopAndBrand/getOpenCardInfo'
+                : 'wxCommonInfo/getActMemberInfo',
             $.domain.includes('cjhy')
                 ? `venderId=${$.venderId}&buyerPin=${$.Pin}&activityType=${$.activityType}`
                 :
@@ -157,8 +157,8 @@ $.logic = async function () {
 
         if ($.needFollow && !$.hasFollow) {
             let followShop = await $.api($.domain.includes('cjhy')
-                ? 'wxActionCommon/newFollowShop'
-                : 'wxActionCommon/followShop',
+                    ? 'wxActionCommon/newFollowShop'
+                    : 'wxActionCommon/followShop',
                 $.domain.includes('cjhy')
                     ? `venderId=${$.venderId}&activityId=${$.activityId}&buyerPin=${$.Pin}&activityType=${$.activityType}`
                     : `userId=${$.venderId}&activityId=${$.activityId}&buyerNick=${$.Pin}&activityType=${$.activityType}`);

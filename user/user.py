@@ -13,6 +13,7 @@ from ..bot.utils import cmd, V4
 from ..diy.utils import rwcon, myzdjr_chatIds, my_chat_id
 jk_version = 'v1.2.9'
 from ..bot.update import version as jk_version
+from urllib import parse
 
 
 bot_id = int(TOKEN.split(":")[0])
@@ -273,14 +274,33 @@ async def user_mx(event):
         await jdbot.send_message(chat_id, f"{title}\n\n{name}\n{function}\n错误原因：{str(e)}\n\n{tip}")
         logger.error(f"错误--->{str(e)}")
 
-
+def get_text(origin):
+    text = re.findall(r'https://i.walle.com/api\?data=(.+)?\)', origin)
+    if len(text) > 0:
+        text = parse.unquote_plus(text[0])
+    elif origin.startswith("export "):
+        text = origin
+    else:
+        return origin
+    try:
+        logger.info(f"原始数据 {text}")
+        # 微定制
+        if "WDZactivityId" in text:
+            activity_id = re.search(f'WDZactivityId="(.+?)"', text)[1]
+            text = f'export jd_wdz_custom="{activity_id}"'
+        logger.info(f"最终变量 {text}")
+        return text
+    except Exception as e:
+        logger.error(e)
+        return origin
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
     try:
         await getJkConfig(jk)
         pat = '(.|\\n)*export\s(%s)=(".*"|\'.*\')' % patternStr
-        text = event.message.text
+        text = get_text(event.message.text)
+        # text = event.message.text
         msg_result = re.findall(pat, text)
         if len(msg_result) > 0:
             pass
@@ -311,7 +331,7 @@ async def activityID(event):
         if not name:
             return
         msg = await jdbot.send_message(chat_id, f'【监控】{group} 发出的 `[{name}]` 环境变量！', link_preview=False)
-        messages = event.message.text.split("\n")
+        messages = text.split("\n")
         change = ""
         is_exec = ""
         for message in messages:
@@ -376,6 +396,7 @@ async def activityID(event):
             rwcon(configs)
         if len(change) == 0:
             # await jdbot.edit_message(msg, f"【取消】{group} 发出的 `[{name}]` 变量无需改动！")
+            # if is_exec:
             msg = await jdbot.edit_message(msg, is_exec)
             await asyncio.sleep(5)
             await jdbot.delete_messages(chat_id, msg)

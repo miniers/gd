@@ -33,6 +33,7 @@ const logs = 0; // 0为关闭日志，1为开启
 $.message = '';
 const timeout = 15000;//超时时间(单位毫秒)
 sleeptime = 1500; //请求休眠时间(单位毫秒)
+const {getSign} = require('./gua_encryption_sign.js');
 
 
 $.countBean={};
@@ -298,8 +299,10 @@ async function activityContent(timeout = 500) {
 // 获取token
 async function isvObfuscator(timeout = 500) {
     return new Promise((resolve) => {
-        setTimeout(() => {
-            body = `body=%7B%22url%22%3A%22https%3A%5C/%5C/lzkj-isv.isvjcloud.com%22%2C%22id%22%3A%22%22%7D&build=167874&client=apple&clientVersion=10.2.4&d_brand=apple&d_model=iPhone14%2C3&ef=1&eid=${randomString(116)}&ep=%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22screen%22%3A%22CJS4DMeyDzc4%22%2C%22wifiBssid%22%3A%22${randomString(43)}%3D%22%2C%22osVersion%22%3A%22CJUkDK%3D%3D%22%2C%22area%22%3A%22${randomString(24)}%22%2C%22openudid%22%3A%22DtVwZtvvZJcmZwPtDtc5DJSmCtZvDzLsCzK2DJG2DtU1EWG5Dzc2ZK%3D%3D%22%2C%22uuid%22%3A%22${randomString(32,'xx')}%22%7D%2C%22ts%22%3A${get_times('ss')}%2C%22hdid%22%3A%22${randomString(43)}%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D&ext=%7B%22prstate%22%3A%220%22%7D&isBackground=N&joycious=98&lang=zh_CN&networkType=wifi&networklibtype=JDNetworkBaseAF&partner=apple&rfs=0000&scope=10&sign=ece45b391fb4abf4e4590c7da6eeacc5&st=1649150743509&sv=101&uemps=0-0&uts=${randomString(64)}`;
+        setTimeout(async () => {
+            let {data} = await getSign('isvObfuscator', {'id': '', 'url': $.activityUrl.match(/^https:\/\/[^\/]*\//)[0]})
+
+            // body = `body=%7B%22url%22%3A%22https%3A%5C/%5C/lzkj-isv.isvjcloud.com%22%2C%22id%22%3A%22%22%7D&build=167874&client=apple&clientVersion=10.2.4&d_brand=apple&d_model=iPhone14%2C3&ef=1&eid=${randomString(116)}&ep=%7B%22ciphertype%22%3A5%2C%22cipher%22%3A%7B%22screen%22%3A%22CJS4DMeyDzc4%22%2C%22wifiBssid%22%3A%22${randomString(43)}%3D%22%2C%22osVersion%22%3A%22CJUkDK%3D%3D%22%2C%22area%22%3A%22${randomString(24)}%22%2C%22openudid%22%3A%22DtVwZtvvZJcmZwPtDtc5DJSmCtZvDzLsCzK2DJG2DtU1EWG5Dzc2ZK%3D%3D%22%2C%22uuid%22%3A%22${randomString(32,'xx')}%22%7D%2C%22ts%22%3A${get_times('ss')}%2C%22hdid%22%3A%22${randomString(43)}%3D%22%2C%22version%22%3A%221.0.3%22%2C%22appname%22%3A%22com.360buy.jdmobile%22%2C%22ridx%22%3A-1%7D&ext=%7B%22prstate%22%3A%220%22%7D&isBackground=N&joycious=98&lang=zh_CN&networkType=wifi&networklibtype=JDNetworkBaseAF&partner=apple&rfs=0000&scope=10&sign=ece45b391fb4abf4e4590c7da6eeacc5&st=1649150743509&sv=101&uemps=0-0&uts=${randomString(64)}`;
             let url = {
                 url: `https://api.m.jd.com/client.action?functionId=isvObfuscator`,
 
@@ -314,7 +317,8 @@ async function isvObfuscator(timeout = 500) {
                      'Accept-Language' : `zh-Hans-CN;q=1, en-CN;q=0.9`,
                      'Accept' : `*/*`
                      },
-                body: body
+                body: data.sign
+
             };
             // console.log(JSON.stringify(url));
             $.post(url, async (err, resp, data) => {

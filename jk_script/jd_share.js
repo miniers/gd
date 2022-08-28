@@ -17,6 +17,8 @@ SHARE_ACTIVITY_ID活动id
 const $ = new Env("自动车-分享有礼");
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
 const notify = $.isNode() ? require('./sendNotify') : '';
+const {getSign} = require('./gua_encryption_sign.js');
+
 let cookiesArr = [], cookie = '', message = '';
 let authorCodeList = [];
 let ownCookieNum = 4;
@@ -358,7 +360,9 @@ function getFirstLZCK () {
         })
     })
 }
-function getToken () {
+async function getToken () {
+    let {data} = await getSign('isvObfuscator', {'id': '', 'url': $.activityUrl.match(/^https:\/\/[^\/]*\//)[0]})
+
     let opt = {
         url: `https://api.m.jd.com/client.action?functionId=isvObfuscator`,
         headers: {
@@ -371,7 +375,7 @@ function getToken () {
             'Accept-Language': 'zh-Hans-CN;q=1',
             'Accept-Encoding': 'gzip, deflate, br',
         },
-        body: `body=%7B%22url%22%3A%20%22https%3A//lzdz1-isv.isvjcloud.com%22%2C%20%22id%22%3A%20%22%22%7D&uuid=72124265217d48b7955781024d65bbc4&client=apple&clientVersion=9.4.0&st=1621796702000&sv=120&sign=14f7faa31356c74e9f4289972db4b988`
+        body: data.sign
     }
     return new Promise(resolve => {
         $.post(opt, (err, resp, data) => {
