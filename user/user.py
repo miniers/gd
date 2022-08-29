@@ -283,12 +283,12 @@ def get_text(origin):
     else:
         return origin
     try:
-        logger.info(f"原始数据 {text}")
+        # logger.info(f"原始数据 {text}")
         # 微定制
         if "WDZactivityId" in text:
             activity_id = re.search(f'WDZactivityId="(.+?)"', text)[1]
             text = f'export jd_wdz_custom="{activity_id}"'
-        logger.info(f"最终变量 {text}")
+        logger.info(f"walle变量: {text}")
         return text
     except Exception as e:
         logger.error(e)
@@ -354,6 +354,7 @@ async def activityID(event):
             isNewEnv = await isjkEnvToDay(key, value)
             if not isNewEnv:
                 is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
+                logger.info(is_exec)
                 continue
             if value in configs:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
