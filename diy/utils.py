@@ -19,7 +19,7 @@ with open(f"{CONFIG_DIR}/diybotset.json", 'r', encoding='utf-8') as f:
 my_chat_id = int(diybotset['my_chat_id'])
 
 
-def myids(values, test_id):
+def myids(values, test_id=None):
     if "," in values:
         ids = values.replace(" ", "").split(",")
         ids = list(map(int, ['%s' % int(_) for _ in ids]))
