@@ -293,6 +293,9 @@ def get_text(origin):
     except Exception as e:
         logger.error(e)
         return origin
+async def re_send(name,msg):
+    for cid in forward_ids:
+        await user.send_message(cid, f'[{name}]\nexport={msg}')
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
@@ -349,6 +352,7 @@ async def activityID(event):
             configs = rwcon("str")
             # 去掉一些奇怪的符号。
             kv = kv.replace('`', '').replace('*', '')
+            await re_send(name,kv)
             key = key.replace('`', '').replace('*', '')
             value = value.replace('`', '').replace('*', '')
             isNewEnv = await isjkEnvToDay(key, value)

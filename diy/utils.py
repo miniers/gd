@@ -25,13 +25,15 @@ def myids(values, test_id):
         ids = list(map(int, ['%s' % int(_) for _ in ids]))
     else:
         ids = [int(values)]
-    ids.append(int(test_id))
+    if test_id:
+        ids.append(int(test_id))
     return ids
 
 
 myzdjr_chatIds = myids(diybotset['myzdjr_chatId'], my_chat_id)
 
 shoptokenIds = myids(diybotset['shoptokenId'], my_chat_id)
+forward_ids = myids(diybotset['forward'])
 
 
 QL8, QL2 = False, False
