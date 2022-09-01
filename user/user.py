@@ -295,7 +295,7 @@ def get_text(origin):
         return origin
 async def re_send(name,msg):
     for cid in forward_ids:
-        await user.send_message(cid, f'[{name}]\nexport={msg}')
+        await user.send_message(cid, f'[{name}]\nexport {msg}')
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
