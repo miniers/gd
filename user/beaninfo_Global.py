@@ -14,29 +14,29 @@ async def SetBeanDetailInfo(event):
             text = msg_text[-1]
         else:
             text = None
-            
+
         if text==None:
             await event.edit('请输入正确的格式: setbd 屏蔽京豆数量')
-            return    
-            
+            return
+
         key="BOTShowTopNum"
         kv=f'{key}="{text}"'
         change=""
-        configs = read("str")    
+        configs = read("str")
         if kv not in configs:
             if key in configs:
-                configs = re.sub(f'{key}=("|\').*("|\')', kv, configs)                
+                configs = re.sub(f'{key}=("|\').*("|\')', kv, configs)
                 write(configs)
             else:
                 configs = read("str")
-                configs += f'export {key}="{text}"\n'                
+                configs += f'export {key}="{text}"\n'
                 write(configs)
-            change = f'已替换屏蔽京豆数为{text}' 
+            change = f'已替换屏蔽京豆数为{text}'
         else:
-            change = f'设定没有改变,想好再来.' 
-            
+            change = f'设定没有改变,想好再来.'
+
         await event.edit(change)
-        
+
     except Exception as e:
         title = "【💥错误💥】"
         name = "文件名：" + os.path.split(__file__)[-1].split(".")[0]
@@ -45,59 +45,59 @@ async def SetBeanDetailInfo(event):
         tip = '建议百度/谷歌进行查询'
         await jdbot.send_message(chat_id, f"{title}\n\n{name}\n{function}\n错误原因：{str(e)}\n{details}\n{tip}")
         logger.error(f"错误--->{str(e)}")
-        
+
 @user.on(events.NewMessage(pattern=r'^bd', outgoing=True))
 async def CCBeanDetailInfo(event):
-    msg_text= event.raw_text.split(' ')
-    if len(msg_text) == 2:
-        text = msg_text[-1]
+    msg_text = re.search(r'^bd\s?(\d*?)$', event.raw_text)
+    if msg_text is not None:
+        text = msg_text.group(1)
     else:
-        text = None  
-    
+        text = None
+
     if text==None:
         await event.edit('请指定要查询的账号,格式: cb 1 或 cb ptpin')
-        return    
-        
+        return
+
     key="BOTCHECKCODE"
     kv=f'{key}="{text}"'
     change=""
-    configs = read("str")    
+    configs = read("str")
     intcount=0
     if kv not in configs:
         if key in configs:
             configs = re.sub(f'{key}=("|\').*("|\')', kv, configs)
-            change += f"【替换】环境变量:`{kv}`\n"  
+            change += f"【替换】环境变量:`{kv}`\n"
             write(configs)
         else:
             configs = read("str")
             configs += f'export {key}="{text}"\n'
-            change += f"【新增】环境变量:`{kv}`\n"  
+            change += f"【新增】环境变量:`{kv}`\n"
             write(configs)
-                
+
 
     await event.edit('开始查询账号'+text+'的资产，请稍后...')
-        
+
     cmdtext=f"task {QLMain}/repo/ccwav_QLScript2/bot_jd_bean_info_QL.js now"
     p = await asyncio.create_subprocess_shell(
         cmdtext, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     res_bytes, res_err = await p.communicate()
-    res = res_bytes.decode('utf-8') 
+    res = res_bytes.decode('utf-8')
     txt=res.split('\n')
-    strReturn="" 
+    strReturn=""
     await event.delete()
     if res:
-        for line in txt:                
+        for line in txt:
             if "【" in line and "🔔" not in line:
                 strReturn=strReturn+line+'\n'
             if intcount==100:
                 intcount=0
-                if strReturn:                    
+                if strReturn:
                     await user.send_message(event.chat_id, strReturn)
                     strReturn=""
 
     else:
         await user.send_message(event.chat_id,f'查询失败!\n请检查是否存在脚本且能正常执行：\n{cmdtext}\n\n拉取脚本命令：\n/cmd ql repo https://github.com/ccwav/QLScript2.git "jd_" "NoUsed" "ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS"', link_preview=False)
-    if strReturn:        
+    if strReturn:
         await user.send_message(event.chat_id, strReturn)
     else:
         await user.send_message(event.chat_id,f'查询失败!\n请检查是否存在脚本且能正常执行：\n{cmdtext}\n\n拉取脚本命令：\n/cmd ql repo https://github.com/ccwav/QLScript2.git "jd_" "NoUsed" "ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS"', link_preview=False)
