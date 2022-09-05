@@ -383,7 +383,7 @@ async def activityID(event):
                     a = random.randint(3, 10)
                     await asyncio.sleep(a)
                 configs = re.sub(f'{key}=("|\').*("|\').*', kv, configs)
-                change += f"【替换】{group} 发出的 `[{name}]` 环境变量成功\n`{kv}`\n\n"
+                change += f"【{'强制执行' if force_run else '替换' }】{group} 发出的 `[{name}]` 环境变量成功\n`{kv}`\n\n"
                 msg = await jdbot.edit_message(msg, change)
             else:
                 if V4:
