@@ -338,6 +338,7 @@ async def activityID(event):
         change = ""
         is_exec = ""
         for message in messages:
+            force_run = True if "fexport" in message else False
             if "export " not in message:
                 continue
             kvs = re.sub(r'.*export ', 'export ', message)
@@ -356,11 +357,11 @@ async def activityID(event):
             key = key.replace('`', '').replace('*', '')
             value = value.replace('`', '').replace('*', '')
             isNewEnv = await isjkEnvToDay(key, value)
-            if not isNewEnv:
+            if not isNewEnv and not force_run:
                 is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
                 logger.info(is_exec)
                 continue
-            if value in configs:
+            if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
                 continue
             if key in configs:
