@@ -31,6 +31,7 @@ log-选择日志
 list-列出已拓展功能
 node-执行js脚本文件，绝对路径
 restart-重启本程序
+redial-路由重新拨号
 repo-仓库管理
 set-BOT设置
 setname-设置命令别名
@@ -68,6 +69,7 @@ log-选择日志
 list-列出已拓展功能
 node-执行js脚本文件，绝对路径
 restart-重启本程序
+redial-路由重新拨号
 repo-仓库管理
 set-BOT设置
 setname-设置命令别名
