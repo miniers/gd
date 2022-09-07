@@ -83,10 +83,10 @@ async def getJkConfig(jk):
     envNum = len(envNameList)
     for i in range(envNum):
         if i == envNum - 1:
-            trans_env_keys = env_trans.keys()
+            trans_env_keys = list(env_trans)
             patternStr += envNameList[i] + "|jd_redrain_url|jd_redrain_half_url|zjdbody"
             if len(trans_env_keys) > 0:
-                patternStr += '|' + '|'.join(trans_env_keys.keys())
+                patternStr += '|' + '|'.join(trans_env_keys)
         else:
             patternStr += envNameList[i] + "|"
     if os.path.exists(jk_today_file):
@@ -318,9 +318,10 @@ async def activityID(event):
         except:
             group = f'[{event.chat.id}](https://t.me/c/{event.chat.id}/{event.message.id})'
         name = None
-        for trans_key in env_trans.keys():
-            if trans_key in text:
-                text = re.sub(r'export\s%s' % trans_key, r'export %s' % env_trans[trans_key], text)
+        if env_trans is not None:
+            for trans_key in list(env_trans):
+                if trans_key in text:
+                    text = re.sub(r'export\s%s' % trans_key, r'export %s' % env_trans[trans_key], text)
         for i in envNameList:
             if i in text:
                 name = nameList[envNameList.index(i)]

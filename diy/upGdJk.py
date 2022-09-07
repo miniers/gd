@@ -32,7 +32,7 @@ async def upgdjk(event):
         SENDER = event.sender_id
         btns = [Button.inline("Yes, I do.", data='yes'), Button.inline("No~", data='cancel')]
         async with jdbot.conversation(SENDER, timeout=60) as conv:
-            msg = await conv.send_message(f"您是否更新要[curtinlv/gd](https://github.com/curtinlv/gd.git)库的监控", buttons=btns, link_preview=False)
+            msg = await conv.send_message(f"您是否更新gd", buttons=btns, link_preview=False)
             convdata = await conv.wait_event(press_event(SENDER))
             res = bytes.decode(convdata.data)
             if res == 'cancel':
@@ -40,20 +40,6 @@ async def upgdjk(event):
                 await jdbot.delete_messages(chat_id, msg)
                 conv.cancel()
                 return
-            else:
-                msg = await jdbot.edit_message(msg, f"好的，请稍等，正在检测版本...\n\n升级成功后会自动重启机器人。如有问题请到群讨论https://t.me/topstyle996\n\n`conf`目录配置文件如有变动，请自行更新到/ql/config", link_preview=False)
-                newversion = await getNewVer()
-                if newversion:
-                    if jk_version == newversion:
-                        msg = await jdbot.edit_message(msg, f"当前版本:[{jk_version}](https://github.com/curtinlv/gd.git)\n最新版本:[{newversion}](https://github.com/curtinlv/gd.git)\n\n无需更新~", link_preview=False)
-                        conv.cancel()
-                        return
-                    else:
-                        msg = await jdbot.edit_message(msg, f"当前版本:[{jk_version}](https://github.com/curtinlv/gd.git)\n最新版本:[{newversion}](https://github.com/curtinlv/gd.git)\n\n开始更新...", link_preview=False)
-                else:
-                    msg = await jdbot.edit_message(msg, f"获取新版本失败~")
-                    conv.cancel()
-                    return
             conv.cancel()
         if V4:
             msg = await jdbot.send_message(chat_id, "抱歉！暂不支持v4在线更新监控！")
