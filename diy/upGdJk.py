@@ -45,7 +45,7 @@ async def upgdjk(event):
             msg = await jdbot.send_message(chat_id, "抱歉！暂不支持v4在线更新监控！")
             await jdbot.delete_messages(chat_id, msg)
         else:
-            await cmd('ql bot 2>&1 > /q/data/log/bot/up.log &')
+            await cmd('ql bot 2>&1 > /ql/data/log/bot/up.log &')
 
     except Exception as e:
         title = "【💥错误💥】"
