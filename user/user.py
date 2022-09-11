@@ -361,7 +361,6 @@ async def activityID(event):
             configs = rwcon("str")
             # 去掉一些奇怪的符号。
             kv = kv.replace('`', '').replace('*', '')
-            await re_send(name,kv)
             key = key.replace('`', '').replace('*', '')
             value = value.replace('`', '').replace('*', '')
             isNewEnv = await isjkEnvToDay(key, value)
@@ -369,6 +368,8 @@ async def activityID(event):
                 is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
                 logger.info(is_exec)
                 continue
+            if not isNewEnv:
+                await re_send(name, kv)
             if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
                 continue
