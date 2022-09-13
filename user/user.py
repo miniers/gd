@@ -368,7 +368,7 @@ async def activityID(event):
                 is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
                 logger.info(is_exec)
                 continue
-            if not isNewEnv:
+            if not force_run:
                 await re_send(name, kv)
             if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
