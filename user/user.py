@@ -297,6 +297,13 @@ def get_text(origin):
     except Exception as e:
         logger.error(e)
         return origin
+
+@jdbot.on(events.CallbackQuery(chats=chat_id, pattern=r"^task\s.*"))
+async def click_callback(event):
+    await event.answer('开始重新执行 {}!'.format(event.data), 5)
+    await cmd(event.data)
+    # await jdbot.send_message(chat_id, 'Thank you for clicking {}!'.format(event.data))
+    # await event.edit('Thank you for clicking {}!'.format(event.data))
 async def re_send(name,msg):
     for cid in forward_ids:
         await user.send_message(cid, f'[{name}]\nexport {msg}')
@@ -349,7 +356,7 @@ async def activityID(event):
             force_run = True if "fexport" in message else False
             if "export " not in message:
                 continue
-            kvs = re.sub(r'.*export ', 'export ', message)
+            kvs = re.sub(r'.*export ', 'export ', message,0, re.S)
             kv = kvs.replace("export ", "")
             key = kv.split("=")[0]
             valuelist = re.findall(r'[\'|"]([^"]*)[\'|"]', kv)
@@ -384,7 +391,7 @@ async def activityID(event):
                     await asyncio.sleep(a)
                     msg = await funCX(name, scriptPath, msg, group)
                     configs = rwcon("str")
-                    if kv in configs:
+                    if kv in configs and not force_run:
                         is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
                         continue
                 if 'VENDER_ID' in key:
