@@ -306,7 +306,7 @@ async def click_callback(event):
     # await event.edit('Thank you for clicking {}!'.format(event.data))
 async def re_send(name,msg):
     for cid in forward_ids:
-        await user.send_message(cid, f'[{name}]\nexport {msg}')
+        await user.send_message(cid, f'[{name}]\n{msg}')
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
@@ -352,6 +352,7 @@ async def activityID(event):
         messages = text.split("\n")
         change = ""
         is_exec = ""
+        re_send_message = ""
         for message in messages:
             force_run = True if "fexport" in message else False
             if "export " not in message:
@@ -376,7 +377,8 @@ async def activityID(event):
                 logger.info(is_exec)
                 continue
             if not force_run:
-                await re_send(name, kv)
+                re_send_message += f"export {kv}\n"
+                # await re_send(name, kv)
             if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
                 continue
@@ -416,6 +418,8 @@ async def activityID(event):
                 change += f"【新增】{group} 发出的 `[{name}]` 环境变量成功\n`{kv}`\n\n"
                 msg = await jdbot.edit_message(msg, change)
             rwcon(configs)
+        if re_send_message:
+            await re_send(name, re_send_message)
         if len(change) == 0:
             # await jdbot.edit_message(msg, f"【取消】{group} 发出的 `[{name}]` 变量无需改动！")
             # if is_exec:
