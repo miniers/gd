@@ -15,16 +15,18 @@ from .. import chat_id, jdbot, logger, ch_name, BOT_SET
 @jdbot.on(events.NewMessage(from_users=chat_id, pattern=r'^/redial'))
 async def myredial(event):
     try:
-        await jdbot.send_message(chat_id, "开始重新拨号")
+        msg= await jdbot.send_message(chat_id, "开始重新拨号")
         ros_config = os.environ['ROS_CONFIG']
         configs = ros_config.split('&&')
         api = connect(
             username=configs[1],
             password=configs[2],
             host=configs[0],
+            timeout=30
         )
         script = api.path('system', 'script')
-        tuple(script('run', **{'.id': 're_dial'}))
+        new_ip = tuple(script('run', **{'.id': 're_dial'}))
+        await jdbot.edit_message(msg, f"重新拨号成功，新IP为{new_ip}")
     except Exception as e:
         title = "【💥错误💥】"
         name = "文件名：" + os.path.split(__file__)[-1].split(".")[0]
