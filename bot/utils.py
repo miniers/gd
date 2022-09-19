@@ -145,7 +145,6 @@ async def cmd(cmdtext):
             cmdtext, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         res_bytes, res_err = await p.communicate()
         res = res_bytes.decode("utf-8")
-        script_path = cmdtext.split(" ")[1]
         if res.find("先登录") > -1:
             await jdbot.delete_messages(chat_id, msg)
             res, msg = ql_login()
@@ -158,7 +157,7 @@ async def cmd(cmdtext):
             if log_send == "2":
                 await user.send_message(bot_id, res)
             else:
-                await jdbot.send_message(chat_id, reContent_INVALID(res), buttons=Button.inline('重新执行', data=script_path))
+                await jdbot.send_message(chat_id, reContent_INVALID(res), buttons=Button.inline('重新执行', data=cmdtext))
         elif len(res) > 1000 or log_type == "2":
             tmp_log = f'{LOG_DIR}/bot/{cmdtext.split("/")[-1].split(".js")[0]}-{datetime.datetime.now().strftime("%H-%M-%S")}.txt'
             with open(tmp_log, "w+", encoding="utf-8") as f:
@@ -168,7 +167,7 @@ async def cmd(cmdtext):
                 await user.send_message(bot_id, "执行结果较长，请查看日志", file=tmp_log)
             else:
                 await jdbot.send_message(chat_id, "执行结果较长，请查看日志", file=tmp_log,
-                                         buttons=Button.inline('重新执行', data=script_path))
+                                         buttons=Button.inline('重新执行', data=cmdtext))
             os.remove(tmp_log)
 
     except Exception as e:

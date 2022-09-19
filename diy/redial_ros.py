@@ -6,7 +6,6 @@ import os
 import sys
 from librouteros import connect
 
-
 from telethon import events
 
 from .. import chat_id, jdbot, logger, ch_name, BOT_SET
@@ -15,7 +14,7 @@ from .. import chat_id, jdbot, logger, ch_name, BOT_SET
 @jdbot.on(events.NewMessage(from_users=chat_id, pattern=r'^/redial'))
 async def myredial(event):
     try:
-        msg= await jdbot.send_message(chat_id, "开始重新拨号")
+        msg = await jdbot.send_message(chat_id, "开始重新拨号")
         ros_config = os.environ['ROS_CONFIG']
         configs = ros_config.split('&&')
         api = connect(
@@ -25,8 +24,10 @@ async def myredial(event):
             timeout=30
         )
         script = api.path('system', 'script')
-        new_ip = tuple(script('run', **{'.id': 're_dial'}))
-        await jdbot.edit_message(msg, f"重新拨号成功，新IP为{new_ip}")
+        try:
+            tuple(script('run', **{'.id': 're_dial'}))
+        except Exception as e:
+            await jdbot.edit_message(msg, f"重新拨号成功，新IP为{e.message}")
     except Exception as e:
         title = "【💥错误💥】"
         name = "文件名：" + os.path.split(__file__)[-1].split(".")[0]
@@ -38,4 +39,3 @@ async def myredial(event):
 
 if ch_name:
     jdbot.add_event_handler(myredial, events.NewMessage(from_users=chat_id, pattern=BOT_SET['命令别名']['redial']))
-

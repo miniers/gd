@@ -301,8 +301,8 @@ def get_text(origin):
 @jdbot.on(events.CallbackQuery(chats=chat_id, pattern=r"^task\s.*"))
 async def click_callback(event):
     await event.answer('开始重新执行 {}!'.format(event.data), 5)
-    # await cmd(event.data)
-    await cmd(f'{cmdName} {event.data} now')
+    await cmd(event.data)
+    # await cmd(f'{cmdName} {event.data} now')
     # await jdbot.send_message(chat_id, 'Thank you for clicking {}!'.format(event.data))
     # await event.edit('Thank you for clicking {}!'.format(event.data))
 async def re_send(name,msg):
