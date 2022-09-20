@@ -27,7 +27,8 @@ async def myredial(event):
         try:
             tuple(script('run', **{'.id': 're_dial'}))
         except Exception as e:
-            await jdbot.edit_message(msg, f"重新拨号成功，新IP为{e.message}")
+            ips = e.message.split(',')
+            await jdbot.edit_message(msg, f"重新拨号成功，旧IP为：{ips[0]},新IP为:{ips[1]}")
     except Exception as e:
         title = "【💥错误💥】"
         name = "文件名：" + os.path.split(__file__)[-1].split(".")[0]
