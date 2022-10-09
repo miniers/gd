@@ -17,6 +17,9 @@ async def myredial(event):
         msg = await jdbot.send_message(chat_id, "开始重新拨号")
         ros_config = os.environ['ROS_CONFIG']
         configs = ros_config.split('&&')
+        if len(configs) < 3:
+            await msg.edit("ROS_CONFIG格式错误")
+            return
         api = connect(
             username=configs[1],
             password=configs[2],
@@ -27,8 +30,12 @@ async def myredial(event):
         try:
             tuple(script('run', **{'.id': 're_dial'}))
         except Exception as e:
-            ips = e.message.split(',')
-            await jdbot.edit_message(msg, f"重新拨号成功，旧IP为：{ips[0]},新IP为:{ips[1]}")
+            if len(e.message) > 0:
+                ips = e.message.split(',')
+                if len(ips) > 0:
+                    old_ip = ips[0]
+                    new_ip = ips[1]
+                    await jdbot.edit_message(msg, f"重新拨号成功，旧IP为：{old_ip},新IP为:{new_ip}")
     except Exception as e:
         title = "【💥错误💥】"
         name = "文件名：" + os.path.split(__file__)[-1].split(".")[0]

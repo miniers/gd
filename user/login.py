@@ -5,14 +5,7 @@ from .. import BOT,  PROXY_TYPE, chat_id, jdbot, user
 from ..bot.utils import press_event, V4, row, split_list
 
 # 兼容青龙新版目录
-try:
-    qlver = os.environ['QL_BRANCH']
-    if qlver >= 'v2.12.0':
-        QLMain='/ql/data'
-    else:
-        QLMain = '/ql'
-except:
-    QLMain = '/ql'
+QLMain = '/ql/data'
 
 if BOT.get('proxy_user') and BOT['proxy_user'] != "代理的username,有则填写，无则不用动":
     proxy = {

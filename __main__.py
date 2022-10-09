@@ -78,7 +78,7 @@ async def hello():
 
 if __name__ == "__main__":
     with jdbot:
-        jdbot.loop.create_task(new_ver())
+        # jdbot.loop.create_task(new_ver())
         jdbot.loop.create_task(bot_set_init())
         jdbot.loop.create_task(hello())
         jdbot.loop.run_forever()

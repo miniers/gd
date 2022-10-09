@@ -102,8 +102,8 @@ async def getJkConfig(jk):
     return jk
 
 
-def readDL(lable, dl=dlDict):
-    if lable:
+def readDL(write, dl=dlDict):
+    if write:
         with open('duilie.json', "w+", encoding="utf-8") as f:
             json.dump(dl, f, ensure_ascii=False)
     else:
@@ -231,17 +231,17 @@ async def funCXDL():
 
 # 增加再进入队列之前判断重复变量
 async def isduilie(kv):
-    lable = False
+    is_in = False
     dl = readDL(False)
     for i in dl['v']:
         if kv == i:
-            lable = True
+            is_in = True
             break
-    if not lable:
+    if not is_in:
         dl = readDL(False)
         dl['v'].append(kv)
         readDL(True, dl)
-    return lable
+    return is_in
 
 @client.on(events.NewMessage(chats=bot_id, from_users=chat_id, pattern=r"^(/pkc|user|在吗)(\?|\？|)"))
 async def users(event):
@@ -309,6 +309,8 @@ async def re_send(name,msg):
     for cid in forward_ids:
         await user.send_message(cid, f'[{name}]\n{msg}')
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
+
+
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
     try:
