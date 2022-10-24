@@ -29,6 +29,8 @@ async def cxjc(event):
                 if "node" in line and ".js" in line :
                     pid = line.split()[0].ljust(10,' ')
                     pid_name = line.split()[4]
+                    if pid_name == "--require" :
+                        pid_name = line.split()[6]
                     res ="/kill"+pid+'文件名: '+pid_name+'\n'
                     strReturn=strReturn+res
                 if "python3" in line and ".py" in line:

@@ -38,7 +38,12 @@ async def pidkill(event):
                         if killpid==pid:
                             isdokill=1
                             break
-            else:            
+                    if "python3" in line:
+                        pid = line.split()[0]
+                        if killpid==pid:
+                            isdokill=1
+                            break
+            else:
                 await jdbot.send_message(chat_id,'当前系统未执行任何脚本')
                 
             if isdokill==0:

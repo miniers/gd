@@ -26,6 +26,7 @@ dlDict = {}
 todayEnv_tmp = {}
 jk_list = jk["jk"]
 cmdName = jk["cmdName"]
+cmdParams = jk["cmdParams"] if jk["cmdParams"] else "now"
 env_trans = jk["env_trans"]
 patternStr = ''
 v_today = time.strftime('%Y-%m-%d', time.localtime(time.time()))
@@ -394,7 +395,10 @@ async def activityID(event):
                     # 进入队列检测前随机休眠，防止并行检测。
                     a = random.randint(1, 10)
                     await asyncio.sleep(a)
-                    msg = await funCX(name, scriptPath, msg, group)
+                    if scriptPath:
+                        msg = await funCX(name, scriptPath, msg, group)
+                    else:
+                        msg = await jdbot.edit_message(msg, f"【{name}】脚本路径未配置，跳过检测！")
                     configs = rwcon("str")
                     if kv in configs and not force_run:
                         is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
@@ -446,13 +450,16 @@ async def activityID(event):
                                 readDL(True, dl)
                     except:
                         pass
-                    await cmd(f'{cmdName} {scriptPath} now')
+                    if scriptPath:
+                        await cmd(f'{cmdName} {scriptPath} {cmdParams}')
+                    else:
+                        await jdbot.edit_message(msg, f"【{name}】脚本路径未配置，跳过执行！")
                     break
                 # 赚京豆助力，将获取到的团body发给自己测试频道，仅自己内部助力使用
                 elif "zjdbody" in text:
                     lable = True
                     if str(event.chat.id) in str(my_chat_id):
-                        await cmd(f'{cmdName} /ql/data/scripts/pkc_zjd.js now')
+                        await cmd(f'{cmdName} /ql/data/scripts/pkc_zjd.js {cmdParams}')
                     break
                 elif "jd_redrain_url" in text:
                     lable = True

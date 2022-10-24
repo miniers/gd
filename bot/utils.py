@@ -155,7 +155,7 @@ async def cmd(cmdtext):
             await jdbot.send_message(chat_id, msg)
             return
         if len(res) == 0:
-            await jdbot.edit_message(msg, f"{cmdtext} 已执行，但返回值为空")
+            await jdbot.edit_message(msg, f"{cmdtext}\n已执行，但返回值为空")
         elif len(res) <= 1000 and log_type == "1":
             await jdbot.delete_messages(chat_id, msg)
             if log_send == "2":
@@ -168,9 +168,9 @@ async def cmd(cmdtext):
                 f.write(res)
             await jdbot.delete_messages(chat_id, msg)
             if log_send == "2":
-                await user.send_message(bot_id, f"{cmdtext} 执行结果较长，请查看日志", file=tmp_log)
+                await user.send_message(bot_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log)
             else:
-                await jdbot.send_message(chat_id, f"{cmdtext} 执行结果较长，请查看日志", file=tmp_log,
+                await jdbot.send_message(chat_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log,
                                          buttons=Button.inline('重新执行', data=cmdtext))
             os.remove(tmp_log)
 
