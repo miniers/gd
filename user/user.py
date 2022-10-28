@@ -304,7 +304,7 @@ def get_text(origin):
 @jdbot.on(events.CallbackQuery(chats=chat_id, pattern=r"^re_run\s.*"))
 async def click_callback(event):
     try:
-        val_key = re.findall(r"^re_run\s(.*)", event.data)[0]
+        val_key = re.findall(r"^re_run\s(.*)", event.data.decode())[0]
         data = cache.get(val_key)
         if data:
             data = json.loads(data)
@@ -314,7 +314,7 @@ async def click_callback(event):
             for ex in kvs:
                 if "export " not in ex:
                     continue
-                kv = kvs.replace("export ", "")
+                kv = ex.replace("export ", "")
                 key = kv.split("=")[0]
                 if key in configs:
                     configs = re.sub(f'{key}=("|\').*("|\').*', kv, configs)
