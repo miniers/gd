@@ -6,9 +6,9 @@ import os, time
 import re
 import sys
 import json
-from telethon import events
+from telethon import events, Button
 # from .login import user
-from .. import chat_id, jdbot, logger, TOKEN, user, jk, CONFIG_DIR, readJKfile, LOG_DIR
+from .. import chat_id, jdbot, logger, TOKEN, user, jk, CONFIG_DIR, readJKfile, LOG_DIR, cache
 from ..bot.utils import cmd, V4
 from ..diy.utils import rwcon, myzdjr_chatIds, my_chat_id, forward_ids
 jk_version = 'v1.2.9'
@@ -52,12 +52,14 @@ else:
 # 增加jk配置在线修改生效
 @readJKfile
 async def getJkConfig(jk):
-    global cmdName, isNow, log_send, log_type, patternStr, nameList, envNameList, scriptPathList, dlDict, yanshi, envNum, jk_list, jcDict, v_today, jk_today_file, todayEnv_tmp
+    global cmdName, cmdParams, env_trans, isNow, log_send, log_type, patternStr, nameList, envNameList, scriptPathList, dlDict, yanshi, envNum, jk_list, jcDict, v_today, jk_today_file, todayEnv_tmp
     v_today = time.strftime('%Y-%m-%d', time.localtime(time.time()))
     jk_today_file = f'{LOG_DIR}/bot/jk-{v_today}.txt'
     """Do some math."""
     jk_list = jk["jk"]
     cmdName = jk["cmdName"]
+    cmdParams = jk["cmdParams"] if jk["cmdParams"] else "now"
+    env_trans = jk["env_trans"]
     dlDict = {}
     jcDict = {}
     todayEnv_tmp = {}
@@ -299,13 +301,35 @@ def get_text(origin):
         logger.error(e)
         return origin
 
-@jdbot.on(events.CallbackQuery(chats=chat_id, pattern=r"^task\s.*"))
+@jdbot.on(events.CallbackQuery(chats=chat_id, pattern=r"^re_run\s.*"))
 async def click_callback(event):
-    await event.answer('开始重新执行 {}!'.format(event.data), 5)
-    await cmd(event.data)
-    # await cmd(f'{cmdName} {event.data} now')
-    # await jdbot.send_message(chat_id, 'Thank you for clicking {}!'.format(event.data))
-    # await event.edit('Thank you for clicking {}!'.format(event.data))
+    try:
+        val_key = re.findall(r"^re_run\s(.*)", event.data)[0]
+        data = cache.get(val_key)
+        if data:
+            data = json.loads(data)
+            all_kv = data['all_kv']
+            kvs = all_kv.split('\n')
+            configs = rwcon("str")
+            for ex in kvs:
+                if "export " not in ex:
+                    continue
+                kv = kvs.replace("export ", "")
+                key = kv.split("=")[0]
+                if key in configs:
+                    configs = re.sub(f'{key}=("|\').*("|\').*', kv, configs)
+                else:
+                    configs += f'export {kv}"\n'
+            rwcon(configs)
+            script_path = data['scriptPath']
+            await event.respond('开始重新执行 {}!'.format(val_key))
+            await cmd(f'{cmdName} {script_path} {cmdParams}')
+        else:
+            await event.respond('读取执行配置失败!')
+
+    except Exception as e:
+        logger.error(e)
+        await event.respond('重新执行失败!')
 async def re_send(name,msg):
     for cid in forward_ids:
         await user.send_message(cid, f'[{name}]\n{msg}')
@@ -356,7 +380,7 @@ async def activityID(event):
         messages = text.split("\n")
         change = ""
         is_exec = ""
-        re_send_message = ""
+        all_kv = ""
         for message in messages:
             force_run = True if "fexport" in message else False
             if "export " not in message:
@@ -380,8 +404,9 @@ async def activityID(event):
                 is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
                 logger.info(is_exec)
                 continue
-            if not force_run:
-                re_send_message += f"export {kv}\n"
+            all_kv += f"export {kv}\n"
+            # if not force_run:
+            #     re_send_message += f"export {kv}\n"
                 # await re_send(name, kv)
             if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
@@ -408,7 +433,8 @@ async def activityID(event):
                     a = random.randint(3, 10)
                     await asyncio.sleep(a)
                 configs = re.sub(f'{key}=("|\').*("|\').*', kv, configs)
-                change += f"【{'强制执行' if force_run else '替换' }】{group} 发出的 `[{name}]` 环境变量成功\n`{kv}`\n\n"
+                change += f"【{'强制执行' if force_run else '替换' }】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
+                # msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
                 msg = await jdbot.edit_message(msg, change)
             else:
                 if V4:
@@ -422,11 +448,23 @@ async def activityID(event):
                 else:
                     configs = rwcon("str")
                     configs += f'export {key}="{value}"\n'
-                change += f"【新增】{group} 发出的 `[{name}]` 环境变量成功\n`{kv}`\n\n"
+                change += f"【新增】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
                 msg = await jdbot.edit_message(msg, change)
             rwcon(configs)
-        if re_send_message:
-            await re_send(name, re_send_message)
+        if all_kv:
+            if scriptPath:
+                count_key = f"bot_{v_today}_{name}_count"
+                cache.incr(count_key)
+                index = cache.get(count_key)
+                val_key = f"bot_{v_today}_{name}_{index}"
+                cache.set(val_key, json.dumps({
+                    "scriptPath": scriptPath,
+                    "all_kv": all_kv,
+                }))
+                msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
+            #转发
+            if "fexport" in text:
+                await re_send(name, all_kv)
         if len(change) == 0:
             # await jdbot.edit_message(msg, f"【取消】{group} 发出的 `[{name}]` 变量无需改动！")
             # if is_exec:

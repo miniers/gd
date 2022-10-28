@@ -25,5 +25,10 @@
     "//StartCMD": "↓↓↓ 是否开启CMD命令，开启改成true  ↓↓↓",
     "StartCMD": true,
     "//noretry": "↓↓↓ 是否 关闭 bot掉线重连，默认开启，关闭改成true  ↓↓↓",
-    "noretry": false
+    "noretry": false,
+    "//redis": "↓↓↓ redis config  ↓↓↓",
+    "redis_url": "127.0.0.1",
+    "redis_port": "",
+    "redis_pwd": "",
+    "redis_db": 3
 }

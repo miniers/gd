@@ -101,6 +101,28 @@ if BOT_SET['开启user'].lower() == 'true':
     logger.info("开启user监控")
     user = user.start()
 
+
+def redis_conn():
+    try:
+        import redis
+        try:
+            redis_url = BOT["redis_url"] if BOT["redis_url"] else "172.17.0.1"
+            redis_port = BOT["redis_port"] if BOT["redis_port"] else "6379"
+            redis_pwd = BOT["redis_pwd"] if BOT["redis_pwd"] else ""
+            redis_db = BOT["redis_db"] if BOT["redis_db"] else 0
+            pool = redis.ConnectionPool(host=redis_url, port=redis_port, decode_responses=True,
+                                        socket_connect_timeout=5, password=redis_pwd, db=redis_db)
+            r = redis.Redis(connection_pool=pool)
+            print('✅redis连接成功')
+            return r
+        except:
+            print("⚠️redis连接异常")
+    except:
+        print("⚠️缺少redis依赖，请运行pip3 install redis")
+
+
+cache = redis_conn()
+
 # 读取监控配置
 def readJKfile(func):
     @wraps(func)

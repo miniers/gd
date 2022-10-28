@@ -1,5 +1,5 @@
 qrcode==7.3.1
-Telethon @ git+https://github.com/kshubham506/Telethon@b1984615afc684e1182ff82674dcfc0a43ed5cd9
+Telethon==1.25.4
 requests==2.27.1
 Pillow==9.0.0
 python-socks==1.2.4
