@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 import asyncio
 import random
 import os, time
@@ -456,6 +458,9 @@ async def activityID(event):
                 count_key = f"bot_{v_today}_{name}_count"
                 cache.incr(count_key)
                 index = cache.get(count_key)
+                today = datetime.today()
+                dt = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59)
+                cache.expire(count_key, int(dt.timestamp() - time.time()))
                 val_key = f"bot_{v_today}_{name}_{index}"
                 cache.set(val_key, json.dumps({
                     "scriptPath": scriptPath,
