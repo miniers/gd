@@ -407,9 +407,6 @@ async def activityID(event):
                 logger.info(is_exec)
                 continue
             all_kv += f"export {kv}\n"
-            # if not force_run:
-            #     re_send_message += f"export {kv}\n"
-                # await re_send(name, kv)
             if value in configs and not force_run:
                 is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
                 continue
@@ -435,7 +432,7 @@ async def activityID(event):
                     a = random.randint(3, 10)
                     await asyncio.sleep(a)
                 configs = re.sub(f'{key}=("|\').*("|\').*', kv, configs)
-                change += f"【{'强制执行' if force_run else '替换' }】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
+                change += f"【{'强制替换' if force_run else '替换' }】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
                 # msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
                 msg = await jdbot.edit_message(msg, change)
             else:
@@ -453,7 +450,7 @@ async def activityID(event):
                 change += f"【新增】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
                 msg = await jdbot.edit_message(msg, change)
             rwcon(configs)
-        if all_kv:
+        if all_kv and change:
             if scriptPath:
                 count_key = f"bot_{v_today}_{name}_count"
                 cache.incr(count_key)
@@ -472,8 +469,8 @@ async def activityID(event):
                 await re_send(name, all_kv)
         if len(change) == 0:
             # await jdbot.edit_message(msg, f"【取消】{group} 发出的 `[{name}]` 变量无需改动！")
-            # if is_exec:
-            msg = await jdbot.edit_message(msg, is_exec)
+            if is_exec:
+                msg = await jdbot.edit_message(msg, is_exec)
             await asyncio.sleep(5)
             await jdbot.delete_messages(chat_id, msg)
             return
