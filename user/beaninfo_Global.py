@@ -87,6 +87,9 @@ async def CCBeanDetailInfo(event):
     await event.delete()
     if res:
         for line in txt:
+            if "近期豆子" in line:
+                strReturn=strReturn+'\n'
+
             if "【" in line and "🔔" not in line:
                 strReturn=strReturn+line+'\n'
             if intcount==100:
@@ -94,10 +97,8 @@ async def CCBeanDetailInfo(event):
                 if strReturn:
                     await user.send_message(event.chat_id, strReturn)
                     strReturn=""
-
     else:
-        await user.send_message(event.chat_id,f'查询失败!\n请检查是否存在脚本且能正常执行：\n{cmdtext}\n\n拉取脚本命令：\n/cmd ql repo https://github.com/ccwav/QLScript2.git "jd_" "NoUsed" "ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS"', link_preview=False)
+        await user.send_message(event.chat_id,'查询失败!')
+
     if strReturn:
         await user.send_message(event.chat_id, strReturn)
-    else:
-        await user.send_message(event.chat_id,f'查询失败!\n请检查是否存在脚本且能正常执行：\n{cmdtext}\n\n拉取脚本命令：\n/cmd ql repo https://github.com/ccwav/QLScript2.git "jd_" "NoUsed" "ql|sendNotify|utils|USER_AGENTS|jdCookie|JS_USER_AGENTS"', link_preview=False)
