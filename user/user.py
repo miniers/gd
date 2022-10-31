@@ -462,7 +462,7 @@ async def activityID(event):
                 cache.set(val_key, json.dumps({
                     "scriptPath": scriptPath,
                     "all_kv": all_kv,
-                }))
+                }), ex=7*24*60*60)
                 msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
             #转发
             if "fexport" not in text:
