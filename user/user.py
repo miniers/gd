@@ -465,7 +465,7 @@ async def activityID(event):
                 }))
                 msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
             #转发
-            if "fexport" in text:
+            if "fexport" not in text:
                 await re_send(name, all_kv)
         if len(change) == 0:
             # await jdbot.edit_message(msg, f"【取消】{group} 发出的 `[{name}]` 变量无需改动！")
