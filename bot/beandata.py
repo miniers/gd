@@ -4,8 +4,7 @@ import time
 import json
 from datetime import timedelta
 from datetime import timezone
-from .utils import CONFIG_SH_FILE, get_cks, AUTH_FILE, QL, logger
-
+from .utils import CONFIG_SH_FILE, get_cks, AUTH_FILE, QL,logger
 SHA_TZ = timezone(
     timedelta(hours=8),
     name='Asia/Shanghai',
@@ -19,10 +18,8 @@ url = "https://api.m.jd.com/api"
 
 def gen_body(page):
     body = {
-        "beginDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime(
-            "%Y-%m-%d %H:%M:%S"),
-        "endDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime(
-            "%Y-%m-%d %H:%M:%S"),
+        "beginDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime("%Y-%m-%d %H:%M:%S"),
+        "endDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime("%Y-%m-%d %H:%M:%S"),
         "pageNo": page,
         "pageSize": 20,
     }
@@ -43,15 +40,13 @@ def gen_params(page):
     }
     return params
 
-
 def get_beans_7days(ck):
     try:
         day_7 = True
         page = 0
         headers = {
-            "Host": "api.m.jd.com",
             "Content-Type": "application/x-www-form-urlencoded;",
-            "User-Agent": "jdapp;android;10.1.6;9;network/wifi;Mozilla/5.0 (Linux; Android 9; MI 6 Build/PKQ1.190118.001; wv)",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 12; SM-G9880) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Mobile Safari/537.36 EdgA/106.0.1370.47",
             "Cookie": ck
         }
         days = []
@@ -63,14 +58,13 @@ def get_beans_7days(ck):
 
         while day_7:
             page = page + 1
-            url = "https://api.m.jd.com/client.action?functionId=getJingBeanBalanceDetail&body=%7B%22pageSize%22%3A%2220%22%2C%22page%22%3A%22" + str(
-                page) + "%22%7D&appid=ld"
-            resp = session.get(url, headers=headers, timeout=100).text
-            amount = 0
+            url="https://bean.m.jd.com/beanDetail/detail.json?page="+str(page)
+            resp = session.get(url,headers=headers, timeout=100).text
+            amount=0
             res = json.loads(resp)
             if res['code'] == "0":
-                for i in res['detailList']:
-                    amount = int(i['amount'])
+                for i in res['jingDetailList']:
+                    amount=int(i['amount'])
                     for date in days:
                         if str(date) in i['date'] and amount > 0:
                             beans_in[str(date)] = beans_in[str(
@@ -104,10 +98,9 @@ def get_total_beans(ck):
         jurl = "https://wxapp.m.jd.com/kwxhome/myJd/home.json"
         resp = session.get(jurl, headers=headers, timeout=100).text
         res = json.loads(resp)
-        return res['user']['jingBean'], res['user']['petName'], res['user']['imgUrl']
+        return res['user']['jingBean'],res['user']['petName'],res['user']['imgUrl']
     except Exception as e:
         logger.error(str(e))
-
 
 def get_bean_data(i):
     try:
@@ -117,9 +110,9 @@ def get_bean_data(i):
             ckfile = CONFIG_SH_FILE
         cookies = get_cks(ckfile)
         if cookies:
-            ck = cookies[i - 1]
+            ck = cookies[i-1]
             beans_res = get_beans_7days(ck)
-            beantotal, nickname, pic = get_total_beans(ck)
+            beantotal,nickname,pic = get_total_beans(ck)
             if beans_res['code'] != 200:
                 return beans_res
             else:
@@ -131,8 +124,6 @@ def get_bean_data(i):
                     beans_in.append(int(beans_res['data'][0][i]))
                     beans_out.append(int(str(beans_res['data'][1][i]).replace('-', '')))
                     beanstotal.append(beantotal)
-            return {'code': 200,
-                    'data': [beans_in[::-1], beans_out[::-1], beanstotal[::-1], beans_res['data'][2][::-1], nickname,
-                             pic]}
+            return {'code': 200, 'data': [beans_in[::-1], beans_out[::-1], beanstotal[::-1], beans_res['data'][2][::-1],nickname,pic]}
     except Exception as e:
         logger.error(str(e))
