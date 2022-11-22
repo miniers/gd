@@ -30,6 +30,8 @@ jk_list = jk["jk"]
 cmdName = jk["cmdName"]
 cmdParams = jk["cmdParams"] if jk["cmdParams"] else "now"
 env_trans = jk["env_trans"]
+monitor_converters_whitelist_keywords = jk["monitor_converters_whitelist_keywords"]
+monitor_converters = jk["monitor_converters"]
 patternStr = ''
 v_today = time.strftime('%Y-%m-%d', time.localtime(time.time()))
 jk_today_file = f'{LOG_DIR}/bot/jk-{v_today}.txt'
@@ -338,12 +340,51 @@ async def re_send(name,msg):
 # @client.on(events.NewMessage(chats=myzdjr_chatIds, pattern=r'%s' % pat))
 
 
+async def converter_handler(text):
+    text = "\n".join(list(filter(lambda x: "export " in x, text.replace("`", "").split("\n"))))
+    for c_w_key in monitor_converters_whitelist_keywords:
+        result = re.search(c_w_key, text)
+        if result is not None:
+            logger.info(f"无需转换 {text}")
+            return text
+    logger.info(f"转换前数据 {text}")
+    try:
+        tmp_text = text
+        # 转换
+        for c_key in monitor_converters:
+            result = re.search(c_key, text)
+            if result is None:
+                logger.info(f"规则不匹配 {c_key},下一个")
+                continue
+            rule = monitor_converters.get(c_key)
+            target = rule.get("env")
+            argv_len = len(re.findall("%s", target))
+            values = re.findall(r'"([^"]*)"', text)
+            if argv_len == 1:
+                target = target % (values[0])
+            elif argv_len == 2:
+                target = target % (values[0], values[1])
+            elif argv_len == 3:
+                target = target % (values[0], values[1], values[2])
+            else:
+                print("不支持更多参数")
+            text = target
+            break
+    except Exception as e:
+        logger.info(str(e))
+    logger.info(f"转换后数据 {text}")
+    return text
+
+
+
 @client.on(events.NewMessage(chats=myzdjr_chatIds))
 async def activityID(event):
     try:
         await getJkConfig(jk)
         pat = '(.|\\n)*export\s(%s)=(".*"|\'.*\')' % patternStr
         text = get_text(event.message.text)
+        text = await converter_handler(text)
+        #export M_WX_LUCK_DRAW_URL="https://lzkj-isv.isvjd.com/wxDrawActivity/activity/activity?activityId=106814ae61ac406c8879aed53d044a9a"
         # text = event.message.text
         msg_result = re.findall(pat, text)
         if len(msg_result) > 0:
@@ -352,8 +393,12 @@ async def activityID(event):
             return
         try:
             group = f'[{event.chat.title}](https://t.me/c/{event.chat.id}/{event.message.id})'
-        except:
-            group = f'[{event.chat.id}](https://t.me/c/{event.chat.id}/{event.message.id})'
+        except Exception as e:
+            logger.error(f"错误22--->{str(e)}")
+            if event.chat and event.message:
+                group = f'[{event.chat.id}](https://t.me/c/{event.chat.id}/{event.message.id})'
+            else:
+                group = f''
         name = None
         if env_trans is not None:
             for trans_key in list(env_trans):
@@ -496,23 +541,23 @@ async def activityID(event):
                         await jdbot.edit_message(msg, f"【{name}】脚本路径未配置，跳过执行！")
                     break
                 # 赚京豆助力，将获取到的团body发给自己测试频道，仅自己内部助力使用
-                elif "zjdbody" in text:
-                    lable = True
-                    if str(event.chat.id) in str(my_chat_id):
-                        await cmd(f'{cmdName} /ql/data/scripts/pkc_zjd.js {cmdParams}')
-                    break
-                elif "jd_redrain_url" in text:
-                    lable = True
-                    msg = await jdbot.send_message(chat_id, r'`更换整点雨url完毕\n请定时任务0 0 * * * task jd_redrain now')
-                    await asyncio.sleep(1)
-                    await jdbot.delete_messages(chat_id, msg)
-                    break
-                elif "jd_redrain_half_url" in text:
-                    lable = True
-                    msg = await jdbot.send_message(chat_id, r'`更换半点雨url完毕\n请定时任务30 21,22 * * * task jd_redrain_half now')
-                    await asyncio.sleep(1)
-                    await jdbot.delete_messages(chat_id, msg)
-                    break
+                # elif "zjdbody" in text:
+                #     lable = True
+                #     if str(event.chat.id) in str(my_chat_id):
+                #         await cmd(f'{cmdName} /ql/data/scripts/pkc_zjd.js {cmdParams}')
+                #     break
+                # elif "jd_redrain_url" in text:
+                #     lable = True
+                #     msg = await jdbot.send_message(chat_id, r'`更换整点雨url完毕\n请定时任务0 0 * * * task jd_redrain now')
+                #     await asyncio.sleep(1)
+                #     await jdbot.delete_messages(chat_id, msg)
+                #     break
+                # elif "jd_redrain_half_url" in text:
+                #     lable = True
+                #     msg = await jdbot.send_message(chat_id, r'`更换半点雨url完毕\n请定时任务30 21,22 * * * task jd_redrain_half now')
+                #     await asyncio.sleep(1)
+                #     await jdbot.delete_messages(chat_id, msg)
+                #     break
             if not lable:
                 await jdbot.send_message(chat_id, f"看到这行字,是有严重BUG!")
         except ImportError:
