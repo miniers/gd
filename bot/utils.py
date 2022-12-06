@@ -136,7 +136,7 @@ def reContent_INVALID(text):
         text = re.sub('\%s{6,}' % i, t, text)
     return text
 
-async def cmd(cmdtext):
+async def cmd(cmdtext, cache_key=""):
     """定义执行cmd命令"""
     try:
         log_send, log_type = await getGendMsgType()
@@ -161,7 +161,10 @@ async def cmd(cmdtext):
             if log_send == "2":
                 await user.send_message(bot_id, res)
             else:
-                await jdbot.send_message(chat_id, reContent_INVALID(res))
+                if cache_key:
+                    await jdbot.send_message(chat_id, reContent_INVALID(res), buttons=Button.inline("重新执行", data=f"re_run {cache_key}"))
+                else:
+                    await jdbot.send_message(chat_id, reContent_INVALID(res))
         elif len(res) > 1000 or log_type == "2":
             tmp_log = f'{LOG_DIR}/bot/{cmdtext.split("/")[-1].split(".js")[0]}-{datetime.datetime.now().strftime("%H-%M-%S")}.txt'
             with open(tmp_log, "w+", encoding="utf-8") as f:
@@ -170,7 +173,10 @@ async def cmd(cmdtext):
             if log_send == "2":
                 await user.send_message(bot_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log)
             else:
-                await jdbot.send_message(chat_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log)
+                if cache_key:
+                    await jdbot.send_message(chat_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log, buttons=Button.inline("重新执行", data=f"re_run {cache_key}"))
+                else:
+                    await jdbot.send_message(chat_id, f"{cmdtext}\n执行结果较长，请查看日志", file=tmp_log)
             os.remove(tmp_log)
 
     except Exception as e:

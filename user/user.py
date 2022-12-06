@@ -327,7 +327,7 @@ async def click_callback(event):
             rwcon(configs)
             script_path = data['scriptPath']
             await event.respond('开始重新执行 {}!'.format(val_key))
-            await cmd(f'{cmdName} {script_path} {cmdParams}')
+            await cmd(f'{cmdName} {script_path} {cmdParams}', val_key)
         else:
             await event.respond('读取执行配置失败!')
 
@@ -447,18 +447,18 @@ async def activityID(event):
             key = key.replace('`', '').replace('*', '')
             value = value.replace('`', '').replace('*', '')
             isNewEnv = await isjkEnvToDay(key, value)
+            all_kv += f"export {kv}\n"
             if not isNewEnv and not force_run:
-                is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。"
+                is_exec = f"【重复】{group} 发出的 `[{name}]`当天变量已重复, 本次取消改动。\n`fexport {kv}`\n\n"
                 logger.info(is_exec)
                 continue
-            all_kv += f"export {kv}\n"
             if value in configs and not force_run:
-                is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
+                is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！\n`fexport {kv}`\n\n"
                 continue
             if key in configs:
                 if await isduilie(kv):
                     # msg = await jdbot.edit_message(msg, f"变量已在队列【{kv}】, 本次取消改动。")
-                    is_exec = f"【队列】{group} 发出的 `[{name}]` 变量已在队列，本次取消改动！"
+                    is_exec = f"【队列】{group} 发出的 `[{name}]` 变量已在队列，本次取消改动！\n`fexport {kv}`\n\n"
                     continue
                 if isNow:
                     # 进入队列检测前随机休眠，防止并行检测。
@@ -470,7 +470,7 @@ async def activityID(event):
                         msg = await jdbot.edit_message(msg, f"【{name}】脚本路径未配置，跳过检测！")
                     configs = rwcon("str")
                     if kv in configs and not force_run:
-                        is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！"
+                        is_exec = f"【取消】{group} 发出的 `[{name}]` 配置文件已是该变量，无需改动！\n`fexport {kv}`\n\n"
                         continue
                 if 'VENDER_ID' in key:
                     # 监控开卡随机休眠
@@ -495,6 +495,7 @@ async def activityID(event):
                 change += f"【新增】{group} 发出的 `[{name}]` 环境变量成功\n`fexport {kv}`\n\n"
                 msg = await jdbot.edit_message(msg, change)
             rwcon(configs)
+        cache_key=""
         if all_kv and change:
             if scriptPath:
                 count_key = f"bot_{v_today}_{name}_count"
@@ -503,12 +504,12 @@ async def activityID(event):
                 today = datetime.today()
                 dt = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59)
                 cache.expire(count_key, int(dt.timestamp() - time.time()))
-                val_key = f"bot_{v_today}_{name}_{index}"
-                cache.set(val_key, json.dumps({
+                cache_key = f"bot_{v_today}_{name}_{index}"
+                cache.set(cache_key, json.dumps({
                     "scriptPath": scriptPath,
                     "all_kv": all_kv,
                 }), ex=7*24*60*60)
-                msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {val_key}"))
+                msg = await jdbot.edit_message(msg, change, buttons=Button.inline("重新执行", data=f"re_run {cache_key}"))
             #转发
             if "fexport" not in text:
                 await re_send(name, all_kv)
@@ -517,7 +518,7 @@ async def activityID(event):
             if is_exec:
                 msg = await jdbot.edit_message(msg, is_exec)
             await asyncio.sleep(5)
-            await jdbot.delete_messages(chat_id, msg)
+            # await jdbot.delete_messages(chat_id, msg)
             return
         try:
             lable = None
@@ -536,7 +537,7 @@ async def activityID(event):
                     except:
                         pass
                     if scriptPath:
-                        await cmd(f'{cmdName} {scriptPath} {cmdParams}')
+                        await cmd(f'{cmdName} {scriptPath} {cmdParams}', cache_key)
                     else:
                         await jdbot.edit_message(msg, f"【{name}】脚本路径未配置，跳过执行！")
                     break
