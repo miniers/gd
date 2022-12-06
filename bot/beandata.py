@@ -4,7 +4,8 @@ import time
 import json
 from datetime import timedelta
 from datetime import timezone
-from .utils import CONFIG_SH_FILE, get_cks, AUTH_FILE, QL,logger
+from .utils import CONFIG_SH_FILE, get_cks, AUTH_FILE, QL, logger
+
 SHA_TZ = timezone(
     timedelta(hours=8),
     name='Asia/Shanghai',
@@ -18,8 +19,10 @@ url = "https://api.m.jd.com/api"
 
 def gen_body(page):
     body = {
-        "beginDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime("%Y-%m-%d %H:%M:%S"),
-        "endDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime("%Y-%m-%d %H:%M:%S"),
+        "beginDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime(
+            "%Y-%m-%d %H:%M:%S"),
+        "endDate": datetime.datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(SHA_TZ).strftime(
+            "%Y-%m-%d %H:%M:%S"),
         "pageNo": page,
         "pageSize": 20,
     }
@@ -40,6 +43,7 @@ def gen_params(page):
     }
     return params
 
+
 def get_beans_7days(ck):
     try:
         day_7 = True
@@ -58,13 +62,13 @@ def get_beans_7days(ck):
 
         while day_7:
             page = page + 1
-            url="https://bean.m.jd.com/beanDetail/detail.json?page="+str(page)
-            resp = session.get(url,headers=headers, timeout=100).text
-            amount=0
+            url = "https://bean.m.jd.com/beanDetail/detail.json?page=" + str(page)
+            resp = session.get(url, headers=headers, timeout=100).text
+            amount = 0
             res = json.loads(resp)
             if res['code'] == "0":
                 for i in res['jingDetailList']:
-                    amount=int(i['amount'])
+                    amount = int(i['amount'])
                     for date in days:
                         if str(date) in i['date'] and amount > 0:
                             beans_in[str(date)] = beans_in[str(
@@ -87,20 +91,23 @@ def get_beans_7days(ck):
 def get_total_beans(ck):
     try:
         headers = {
-            "Host": "wxapp.m.jd.com",
+            "Accept": "application/json,text/plain, */*",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "zh-cn",
             "Connection": "keep-alive",
-            "charset": "utf-8",
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10; MI 9 Build/QKQ1.190825.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/78.0.3904.62 XWEB/2797 MMWEBSDK/201201 Mobile Safari/537.36 MMWEBID/7986 MicroMessenger/8.0.1840(0x2800003B) Process/appbrand4 WeChat/arm64 Weixin NetType/4G Language/zh_CN ABI/arm64 MiniProgramEnv/android",
-            "Content-Type": "application/x-www-form-urlencoded;",
-            "Accept-Encoding": "gzip, compress, deflate, br",
             "Cookie": ck,
+            "Referer": "https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 12; SM-G9880) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Mobile Safari/537.36 EdgA/106.0.1370.47"
         }
-        jurl = "https://wxapp.m.jd.com/kwxhome/myJd/home.json"
+        jurl = "https://wq.jd.com/user/info/QueryJDUserInfo?sceneval=2"
         resp = session.get(jurl, headers=headers, timeout=100).text
         res = json.loads(resp)
-        return res['user']['jingBean'],res['user']['petName'],res['user']['imgUrl']
+        return res['base']['jdNum'], res['base'][
+            'nickname'], 'http://storage.360buyimg.com/i.imageUpload/b6adc6e4bbaa31363437393935323238323435_mid.jpg'
     except Exception as e:
         logger.error(str(e))
+
 
 def get_bean_data(i):
     try:
@@ -110,9 +117,9 @@ def get_bean_data(i):
             ckfile = CONFIG_SH_FILE
         cookies = get_cks(ckfile)
         if cookies:
-            ck = cookies[i-1]
+            ck = cookies[i - 1]
             beans_res = get_beans_7days(ck)
-            beantotal,nickname,pic = get_total_beans(ck)
+            beantotal, nickname, pic = get_total_beans(ck)
             if beans_res['code'] != 200:
                 return beans_res
             else:
@@ -124,6 +131,8 @@ def get_bean_data(i):
                     beans_in.append(int(beans_res['data'][0][i]))
                     beans_out.append(int(str(beans_res['data'][1][i]).replace('-', '')))
                     beanstotal.append(beantotal)
-            return {'code': 200, 'data': [beans_in[::-1], beans_out[::-1], beanstotal[::-1], beans_res['data'][2][::-1],nickname,pic]}
+            return {'code': 200,
+                    'data': [beans_in[::-1], beans_out[::-1], beanstotal[::-1], beans_res['data'][2][::-1], nickname,
+                             pic]}
     except Exception as e:
         logger.error(str(e))
