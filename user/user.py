@@ -10,13 +10,17 @@ import sys
 import json
 from telethon import events, Button
 # from .login import user
-from .. import chat_id, jdbot, logger, TOKEN, user, jk, CONFIG_DIR, readJKfile, LOG_DIR, cache
+from .. import chat_id, jdbot, logger, TOKEN, user, jk, CONFIG_DIR, readJKfile, LOG_DIR, cache,spy_decode_url
 from ..bot.utils import cmd, V4
 from ..diy.utils import rwcon, myzdjr_chatIds, my_chat_id, forward_ids
 jk_version = 'v1.2.9'
 from ..bot.update import version as jk_version
 from urllib import parse
+import requests
 
+requests.adapters.DEFAULT_RETRIES = 5
+session = requests.session()
+session.keep_alive = False
 
 bot_id = int(TOKEN.split(":")[0])
 client = user
@@ -286,6 +290,16 @@ async def user_mx(event):
         logger.error(f"错误--->{str(e)}")
 
 def get_text(origin):
+    spy_text = re.findall(r'^(.*)(SpyEncode_.*)([\'"])$', origin)
+
+    if len(spy_text) > 0 and spy_decode_url:
+        try:
+            resp = requests.post(spy_decode_url, json={'data':spy_text[0][1]})
+            origin = f'{spy_text[0][0]}{resp.text}{spy_text[0][2]}'
+            logger.info(f"spy变量: {origin}")
+            return origin
+        except:
+            pass
     text = re.findall(r'https://i.walle.com/api\?data=(.+)?\)', origin)
     if len(text) > 0:
         text = parse.unquote_plus(text[0])
@@ -347,14 +361,14 @@ async def converter_handler(text):
         if result is not None:
             logger.info(f"无需转换 {text}")
             return text
-    logger.info(f"转换前数据 {text}")
+    # logger.info(f"转换前数据 {text}")
     try:
         tmp_text = text
         # 转换
         for c_key in monitor_converters:
             result = re.search(c_key, text)
             if result is None:
-                logger.info(f"规则不匹配 {c_key},下一个")
+                # logger.info(f"规则不匹配 {c_key},下一个")
                 continue
             rule = monitor_converters.get(c_key)
             target = rule.get("env")

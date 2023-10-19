@@ -55,6 +55,7 @@ else:
     ch_name = False
     
 chat_id = int(BOT["user_id"])
+spy_decode_url = BOT["spy_decode_url"]
 TOKEN = BOT["bot_token"]
 API_ID = BOT["api_id"]
 API_HASH = BOT["api_hash"]
