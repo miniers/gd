@@ -290,7 +290,7 @@ async def user_mx(event):
         logger.error(f"错误--->{str(e)}")
 
 def get_text(origin):
-    spy_text = re.findall(r'^(.*)(SpyEncode_.*)([\'"])$', origin)
+    spy_text = re.findall(r'^(.*)(SpyEncode_.*?)([\'"])', origin)
 
     if len(spy_text) > 0 and spy_decode_url:
         try:
